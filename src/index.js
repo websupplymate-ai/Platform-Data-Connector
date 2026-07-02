@@ -37,6 +37,10 @@ const ALLOWED_TABS = [
   "Risks_Opportunities",
   "Weekly_Report",
   "Departments_Config",
+  "AI_Recommendations",
+  "Procurement_Status",
+  "Team_Productivity",
+  "Cash_Flow",
 ];
 
 const CACHE_SECONDS = 60;
