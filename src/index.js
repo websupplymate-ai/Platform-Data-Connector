@@ -60,6 +60,16 @@ function jsonResponse(data, status = 200) {
   });
 }
 
+// Google Sheets returns date-formatted cells as serial numbers (days since
+// Dec 30 1899) when using UNFORMATTED_VALUE, even if the sheet just shows
+// "2026-07-08". Any column whose header contains "Date" gets converted back
+// to a plain ISO date string here, once, so every app downstream never has
+// to think about this.
+function serialToISODate(serial) {
+  const ms = Date.UTC(1899, 11, 30) + serial * 86400000;
+  return new Date(ms).toISOString().slice(0, 10);
+}
+
 // Converts Sheets API "values" grid (array of arrays) into an array of
 // objects keyed by the header row. Skips fully-empty rows.
 function rowsToObjects(values) {
@@ -70,7 +80,16 @@ function rowsToObjects(values) {
     .map((row) => {
       const obj = {};
       header.forEach((key, i) => {
-        obj[key] = row[i] !== undefined ? row[i] : null;
+        let val = row[i] !== undefined ? row[i] : null;
+        if (
+          typeof val === "number" &&
+          key.toLowerCase().includes("date") &&
+          val > 20000 &&
+          val < 60000
+        ) {
+          val = serialToISODate(val);
+        }
+        obj[key] = val;
       });
       return obj;
     });
