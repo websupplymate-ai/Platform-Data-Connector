@@ -41,6 +41,7 @@ const ALLOWED_TABS = [
   "Procurement_Status",
   "Team_Productivity",
   "Cash_Flow",
+  "Users_Roles",
 ];
 
 const CACHE_SECONDS = 60;
@@ -123,6 +124,40 @@ export default {
         service: "platform-data-connector",
         registeredSheets: Object.keys(SHEET_REGISTRY),
       });
+    }
+
+    const searchMatch = url.pathname.match(/^\/search\/([a-z0-9-]+)$/);
+    if (searchMatch) {
+      const [, sheetKey] = searchMatch;
+      const q = (url.searchParams.get("q") || "").toLowerCase().trim();
+      const sheetConfig = SHEET_REGISTRY[sheetKey];
+      if (!sheetConfig || sheetConfig.id.startsWith("REPLACE_")) {
+        return jsonResponse({ error: `Sheet '${sheetKey}' is not configured yet.` }, 404);
+      }
+      if (!q) return jsonResponse({ query: q, count: 0, results: [] });
+      if (!env.GOOGLE_SHEETS_API_KEY) {
+        return jsonResponse({ error: "GOOGLE_SHEETS_API_KEY secret is not set." }, 500);
+      }
+      try {
+        const results = [];
+        for (const tab of ALLOWED_TABS) {
+          const rows = await fetchTab(sheetConfig.id, tab, env.GOOGLE_SHEETS_API_KEY);
+          for (const row of rows) {
+            const matchField = Object.entries(row).find(
+              ([, v]) => v !== null && String(v).toLowerCase().includes(q)
+            );
+            if (matchField) {
+              results.push({ tab, matchedField: matchField[0], snippet: String(matchField[1]), row });
+              if (results.length >= 30) break;
+            }
+          }
+          if (results.length >= 30) break;
+        }
+        const response = jsonResponse({ query: q, count: results.length, results });
+        return response;
+      } catch (err) {
+        return jsonResponse({ error: err.message }, 502);
+      }
     }
 
     const match = url.pathname.match(/^\/connector\/([a-z0-9-]+)\/([A-Za-z_]+)$/);
