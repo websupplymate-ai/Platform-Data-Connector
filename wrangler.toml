@@ -1,0 +1,15 @@
+name = "platform-data-connector"
+main = "src/index.js"
+compatibility_date = "2026-07-01"
+
+# Non-secret configuration goes here.
+[vars]
+ENVIRONMENT = "production"
+
+# The Google Sheets API key is a SECRET — never put it in this file or in
+# src/index.js. Set it after first deploy with:
+#
+#   wrangler secret put GOOGLE_SHEETS_API_KEY
+#
+# (Doc 07 §11–12: API keys are managed centrally, never hardcoded, never
+# committed to a repo.)
