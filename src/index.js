@@ -19,7 +19,7 @@
 // ---------------------------------------------------------------------------
 const SHEET_REGISTRY = {
   "ceo-os": {
-    id: "13TElr9696UTv6EyU2OGa44IAYWC0SkYH",
+    id: "1WvcNNKA99ET-GRW3XoILjzbkcRYj0nX_jSHKLGhXjUo",
     label: "CEO OS Master Sheet",
   },
   // "sales-os": { id: "REPLACE_ME", label: "Sales OS Master Sheet" },
